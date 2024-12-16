@@ -15,8 +15,9 @@ class TestNode(object):
         self.faultIsolationArray = faultIsolationArray
 
 class AUTODL:
-    def __init__(self,git):
+    def __init__(self,git,you):
         self.git = git
+        self.you = you
 # Neural Network Model for Q-Learning
 # This model will approximate the Q-Values for each possible action(node to pick next)
 # This network has three fully connected layers with ReLU activations
