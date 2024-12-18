@@ -6,20 +6,36 @@ import torch
 import torch.optim as optim
 import torch.nn.functional as F
 class TestNode(object):
-    def __init__(self, cost, faultIsolationArray):
+    def __init__(self,code_index, cost, faultIsolationArray):
         """
         :param cost: The cost of each test node
         :param faultIsolationArray: The accuracy list of faults that can be Isolated
         """
+        self.code_index = code_index
         self.cost = cost
         self.faultIsolationArray = faultIsolationArray
 
-class AUTODL:
-    def __init__(self,git,you):
-        self.git = git
-        self.you = you
-        self.add = git + you + 3
-        self.faultIsolationArray = [0.1]
+# This is a state node accuracy calculate function which calculate the fault category
+class stateAccuracy():
+    def __init__(self,nodes):
+        """
+        :param nodes: all test nodes
+        """
+        self.node_map = {node.code_index: node.faultIsolationArray for node in nodes}
+    def accuracy(self,state):
+        """
+        :param state: state vector
+        :return:
+        """
+        indices = [index for index, value in enumerate(state) if value == 1]
+        if len(indices) == 0:
+            return None
+        else:
+            accuracy = []
+            for index in indices:
+                accuracy_current_node = self.node_map[index]
+                accuracy = [max(accuracy_hist, accuracy_cur) for accuracy_hist, accuracy_cur in zip(accuracy, accuracy_current_node)]
+            return accuracy
 # Neural Network Model for Q-Learning
 # This model will approximate the Q-Values for each possible action(node to pick next)
 # This network has three fully connected layers with ReLU activations
