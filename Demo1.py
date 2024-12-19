@@ -19,12 +19,12 @@ class TestNode(object):
 class actionAccuracy():
     def __init__(self,action):
         """
-        :param nodes: all test nodes
+        :param action: The action of each step
         """
         self.node = action
     def accuracy(self, nodes):
         """
-        :param state: state vector
+        :param nodes: all nodes belonging to the circuit
         :return:
         """
         index = None
