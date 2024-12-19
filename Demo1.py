@@ -15,27 +15,28 @@ class TestNode(object):
         self.cost = cost
         self.faultIsolationArray = faultIsolationArray
 
-# This is a state node accuracy calculate function which calculate the fault category
-class stateAccuracy():
-    def __init__(self,nodes):
+# This is an action node accuracy calculate function which calculate the fault category
+class actionAccuracy():
+    def __init__(self,action):
         """
         :param nodes: all test nodes
         """
-        self.node_map = {node.code_index: node.faultIsolationArray for node in nodes}
-    def accuracy(self,state):
+        self.node = action
+    def accuracy(self, nodes):
         """
         :param state: state vector
         :return:
         """
-        indices = [index for index, value in enumerate(state) if value == 1]
-        if len(indices) == 0:
-            return None
+        index = None
+        for i, value in enumerate(self.node):
+            if value == 1:
+                index = i
+        if index:
+            for node in nodes:
+                if node.codex_index == index:
+                    return node.faultIsolationArray
         else:
-            accuracy = []
-            for index in indices:
-                accuracy_current_node = self.node_map[index]
-                accuracy = [max(accuracy_hist, accuracy_cur) for accuracy_hist, accuracy_cur in zip(accuracy, accuracy_current_node)]
-            return accuracy
+            return None
 # Neural Network Model for Q-Learning
 # This model will approximate the Q-Values for each possible action(node to pick next)
 # This network has three fully connected layers with ReLU activations
@@ -133,7 +134,7 @@ class TNSAgent:
                 loss.backward()
                 self.optimizer.step()
 
-            if self.epilon > self.epsilon_min:
+            if self.epsilon > self.epsilon_min:
                 self.epsilon *= self.epsilon_decay
 
 class TNSEnvironment:
@@ -149,7 +150,10 @@ class TNSEnvironment:
         self.picked = []
         self.total_faults = 13
         self.total_cost = 0
+        self.fault_threshold = [] # This is the fault threshold for each fault
         self.total_fault_isolated = []
+        self.alpha = 0.5 # the hyperparameter of cost
+        self.beta = 0.5 # the hyperparameter of accuracy
         self.total_fault_isolated_num = 0
     def reset(self):
         """
@@ -167,12 +171,22 @@ class TNSEnvironment:
         - If the agent picking a node again, it gets a negative reward.
         - Otherwise, the reward is the negative cost of the picked node.
         - The episode ends when all faults are isolated (done=True).
-        :param action: a index of node
+        :param action: an index of node
         """
+        actionAcc = []
         if action in self.picked:
             reward = -10
         else:
-            reward = - self.nodes[action].cost
+            actionAcc_cur = actionAccuracy(action).accuracy(self.nodes)
+            if len(actionAcc) == 0:# calculate the action Accuracy of each fault
+                actionAcc = actionAcc_cur
+            else:
+                actionAcc = [max(acc1, acc2) for acc1, acc2 in zip(actionAcc, actionAcc_cur)]
+            if actionAcc and len(actionAcc) == len(self.fault_threshold):
+                for actionAcc, accThresh in zip(actionAcc.faultIsolationArray, self.fault_threshold):
+                    if actionAcc >= accThresh:
+                        self.total_fault_isolated_num += 1
+            reward = self.beta * self.total_fault_isolated_num - self.alpha * self.nodes[action].cost
             self.total_fault_isolated += self.nodes[action].faultIsolationArray
             self.picked.append(action)
             self.total_cost += abs(reward)
@@ -181,6 +195,7 @@ class TNSEnvironment:
         is_all_one = lambda lst: all(x == 1 for x in lst)
         self.total_fault_isolated_num = sum(self.total_fault_isolated)
         done = is_all_one(self.total_fault_isolated)
+        self.total_fault_isolated_num = 0
 
         return self.current_state, reward, done
 
