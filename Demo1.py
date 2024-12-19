@@ -19,7 +19,7 @@ class TestNode(object):
 class actionAccuracy():
     def __init__(self,action):
         """
-        :param action: The action of each step
+        :param action: The action of each learning step
         """
         self.node = action
     def accuracy(self, nodes):
