@@ -2,8 +2,11 @@ from sklearn.mixture import GaussianMixture
 from sklearn.metrics import confusion_matrix
 import numpy as np
 from scipy.stats import mode
+import os
+import scipy.io as io
+from sklearn.preprocessing import StandardScaler
 
-def gmm_fault_separation(train_data, train_label,test_data, test_label, n_classes):
+def gmm_fault_separation(train_data, test_data, test_label, n_classes):
     """
     Using GMM to calculate the isolation score of each fault
     :param data: fault data
@@ -25,5 +28,33 @@ def gmm_fault_separation(train_data, train_label,test_data, test_label, n_classe
         category_accuracy.append(accuracy)
     return category_accuracy
 
+def preprocessing(file):
+    data_file = io.loadmat(file)
+    train_data = data_file["train_data"]
+    test_data = data_file["test_data"]
+    test_label = data_file["test_label"]
+
+    standard_scaler = StandardScaler()
+    train_data = standard_scaler.fit_transform(train_data)
+    test_data = standard_scaler.fit_transform(test_data)
+    return train_data, test_data, test_label
+
+def node_accuracy_dic_generate(path):
+    """
+    :param path: your top mat file path
+    :return: node accuracy dictionary
+    """
+    accuracy_dic = {}
+    files = os.listdir(path)
+    for file in files:
+        sub_path = os.path.join(path, file)
+        sub_files = os.listdir(sub_path)
+        for sub_file in sub_files:
+            if os.path.isfile(sub_file):
+                file_path = os.path.join(sub_path, sub_file)
+                train_data, test_data, test_label = preprocessing(file_path)
+                accuracy_this_node = gmm_fault_separation(train_data, test_data, test_label, n_classes=13)
+                accuracy_dic[sub_file[:-4]] = accuracy_this_node
+    return accuracy_dic
 
 
