@@ -220,3 +220,4 @@ def train_tns_agent(nodes, episodes = 1000):
             state = next_state
             total_cost += abs(reward)
         print(f"Episode {episode+1}, Total Cost: {total_cost}, Total Fault Isolation: {env.total_fault_isolated_num}")
+    
