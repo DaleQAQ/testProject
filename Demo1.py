@@ -22,7 +22,7 @@ class actionAccuracy():
         """
         :param action: The action of each learning step
         """
-        self.node = action
+        self.node = np.eye(args.n_nodes)[action]
     def accuracy(self, nodes):
         """
         :param nodes: all nodes belonging to the circuit
@@ -34,7 +34,7 @@ class actionAccuracy():
                 index = i
         if index:
             for node in nodes:
-                if node.codex_index == index:
+                if node.code_index == index:
                     return node.faultIsolationArray
         else:
             return None
@@ -178,14 +178,15 @@ class TNSEnvironment:
         if action in self.picked:
             reward = -10
         else:
+
             actionAcc_cur = actionAccuracy(action).accuracy(self.nodes)
             if len(actionAcc) == 0:# calculate the action Accuracy of each fault
                 actionAcc = actionAcc_cur
             else:
                 actionAcc = [max(acc1, acc2) for acc1, acc2 in zip(actionAcc, actionAcc_cur)]
-            if actionAcc and len(actionAcc) == len(self.fault_threshold):
-                for actionAcc, accThresh in zip(actionAcc.faultIsolationArray, self.fault_threshold):
-                    if actionAcc >= accThresh:
+            if actionAcc is not None and len(actionAcc) == len(self.fault_threshold):
+                for actionAcc_per, accThresh in zip(actionAcc, self.fault_threshold):
+                    if actionAcc_per >= accThresh:
                         self.total_fault_isolated_num += 1
             reward = self.beta * self.total_fault_isolated_num - self.alpha * self.nodes[action].cost
             self.total_fault_isolated += self.nodes[action].faultIsolationArray
