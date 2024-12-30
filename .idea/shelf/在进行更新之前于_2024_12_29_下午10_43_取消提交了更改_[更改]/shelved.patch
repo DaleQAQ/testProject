@@ -1,0 +1,26 @@
+Index: data.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import pickle\r\nimport numpy as np\r\nfrom config import get_args\r\n\r\n\r\nargs = get_args()\r\nn_instances = args.n_instances #the number of circuits\r\nn_nodes = args.n_nodes #the number of test nodes of each instance \r\ncost_max = args.cost_max #the maximum cost of nodes in the circuit\r\ncost_range = args.cost_range #the range of cost of nodes in the circuit\r\n\r\nacc_thr = args.acc_thr #the accuracy threshold\r\nacc_generated = np.random.rand(int(args.n_instances), int(args.n_nodes)) # generate the accuracy of each node\r\ncost_generated = np.random.randint(low = args.cost_range[0], high = args.cost_range[1], size =(int(args.n_instances), int(args.n_nodes))) # generate the cost of each node\r\n\r\ndata = {\r\n    'n_instances': n_instances,\r\n    'acc_generated': acc_generated,\r\n    'cost_generated': cost_generated,\r\n    'cost_max': cost_max\r\n}\r\n\r\nwith open('instances%d_nodes%d_cost_max%d_acc_thr%d_data.pkl'%(int(n_instances), int(n_nodes), int(cost_max), int(acc_thr)), 'wb') as f:\r\n    pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)\r\nprint('Data generated and saved to instances%d_nodes%d_cost_max%d_acc_thr%d_data.pkl'%(int(n_instances), int(n_nodes), int(cost_max), int(acc_thr)))\r\n
+===================================================================
+diff --git a/data.py b/data.py
+--- a/data.py	
++++ b/data.py	
+@@ -4,12 +4,11 @@
+ 
+ 
+ args = get_args()
+-n_instances = args.n_instances #the number of circuits
+-n_nodes = args.n_nodes #the number of test nodes of each instance 
+-cost_max = args.cost_max #the maximum cost of nodes in the circuit
+-cost_range = args.cost_range #the range of cost of nodes in the circuit
+-
+-acc_thr = args.acc_thr #the accuracy threshold
++n_instances = args.n_instances  # the number of circuits
++n_nodes = args.n_nodes  # the number of test nodes of each instance
++cost_max = args.cost_max  # the maximum cost of nodes in the circuit
++cost_range = args.cost_range # the range of cost of nodes in the circuit
++acc_thr = args.acc_thr  # the accuracy threshold
+ acc_generated = np.random.rand(int(args.n_instances), int(args.n_nodes)) # generate the accuracy of each node
+ cost_generated = np.random.randint(low = args.cost_range[0], high = args.cost_range[1], size =(int(args.n_instances), int(args.n_nodes))) # generate the cost of each node
+ 

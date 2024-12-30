@@ -1,10 +1,11 @@
 import random
-
+import pickle
 import numpy as np
 import torch.nn as nn
 import torch
 import torch.optim as optim
 import torch.nn.functional as F
+from config import get_args
 class TestNode(object):
     def __init__(self,code_index, cost, faultIsolationArray):
         """
@@ -148,12 +149,12 @@ class TNSEnvironment:
         self.current_state = []   # The current state will store which nodes have been picked
         self.current_node = None
         self.picked = []
-        self.total_faults = 13
+        self.total_faults = args.n_faults
         self.total_cost = 0
-        self.fault_threshold = [] # This is the fault threshold for each fault
+        self.fault_threshold = [args.acc_thr] * self.total_faults # This is the fault threshold for each fault
         self.total_fault_isolated = []
-        self.alpha = 0.5 # the hyperparameter of cost
-        self.beta = 0.5 # the hyperparameter of accuracy
+        self.alpha = args.alpha # the hyperparameter of cost
+        self.beta = args.beta # the hyperparameter of accuracy
         self.total_fault_isolated_num = 0
     def reset(self):
         """
@@ -220,4 +221,28 @@ def train_tns_agent(nodes, episodes = 1000):
             state = next_state
             total_cost += abs(reward)
         print(f"Episode {episode+1}, Total Cost: {total_cost}, Total Fault Isolation: {env.total_fault_isolated_num}")
-    
+
+def load_data_from_pkl(file_path):
+    """
+    Load data from a pkl file
+    :param file_path: the path of the pkl file
+    :return: instances_nodes: include TestNodes of each instances
+    """
+    with open(file_path, 'rb') as file:
+        data = pickle.load(file)
+    instances_nodes = []
+    for i in range(data['n_instances']):
+        circuit_nodes = []
+        for j in range(len(data['acc_generated'][i])):
+            node = TestNode(j, data['cost_generated'][i][j], data['acc_generated'][i][j])
+            circuit_nodes.append(node)
+        instances_nodes.append(circuit_nodes)
+    return instances_nodes
+def train_multiple_instances():
+    pkl_path = 'instances{}_nodes{}_cost_max{}_acc_thr{}_data.pkl'.format(args.n_instances, args.n_nodes, args.cost_max, args.acc_thr)
+    instances_nodes = load_data_from_pkl(pkl_path)
+    for instance in instances_nodes:
+        train_tns_agent(instance,episodes=args.episodes)
+if __name__ == '__main__':
+    args = get_args()
+    train_multiple_instances()
