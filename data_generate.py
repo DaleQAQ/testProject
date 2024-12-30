@@ -21,6 +21,6 @@ data = {
     'cost_max': cost_max
 }
 
-with open('instances%d_nodes%d_cost_max%d_acc_thr%d_data.pkl'%(int(n_instances), int(n_nodes), int(cost_max), acc_thr), 'wb') as f:
+with open('instances%d_nodes%d_cost_max%d_acc_thr%.1f_data.pkl'%(int(n_instances), int(n_nodes), int(cost_max), acc_thr), 'wb') as f:
     pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
-print('Data generated and saved to instances%d_nodes%d_cost_max%d_acc_thr%d_data.pkl'%(int(n_instances), int(n_nodes), int(cost_max), acc_thr))
+print('Data generated and saved to instances%d_nodes%d_cost_max%d_acc_thr%.1f_data.pkl'%(int(n_instances), int(n_nodes), int(cost_max), acc_thr))
